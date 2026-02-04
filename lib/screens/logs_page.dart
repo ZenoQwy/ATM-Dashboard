@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
 import '../models/intrusion_log.dart';
+import '../services/log_service.dart';
 
 class LogsPage extends StatelessWidget {
-  final List<IntrusionLog> logs;
-
-  const LogsPage({super.key, required this.logs});
+  const LogsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (logs.isEmpty) {
-      return const Center(
-        child: Text(
-          'Aucun log pour le moment',
-          style: TextStyle(color: Colors.white38),
-        ),
-      );
-    }
+    final logService = LogService();
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: logs.length,
-      itemBuilder: (context, index) {
-        final log = logs[index];
-        return _buildLogItem(log);
+    return ValueListenableBuilder<List<IntrusionLog>>(
+      valueListenable: logService.logsNotifier,
+      builder: (context, logs, child) {
+        if (logs.isEmpty) {
+          return const Center(
+            child: Text(
+              'Aucun log pour le moment',
+              style: TextStyle(color: Colors.white38),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: logs.length,
+          itemBuilder: (context, index) {
+            final log = logs[index];
+            return _buildLogItem(log);
+          },
+        );
       },
     );
   }

@@ -22,6 +22,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _alertMessage = '';
   bool _showNotificationBanner = false;
   Timer? _bannerTimer;
+  String _alertType = 'chat';
 
   final List<IntrusionLog> _intrusionLogs = [];
   final _notificationService = NotificationService();
@@ -44,18 +45,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _handleNewAlert(String message) {
+  void _handleNewAlert(String message, String type) {
+    if (type == 'chat' && _selectedIndex == 1) return;
+    if (type == 'intrusion' && _selectedIndex == 2) return;
+
     setState(() {
       _alertMessage = message;
+      _alertType = type;
       _showNotificationBanner = true;
-      _intrusionLogs.insert(0, IntrusionLog(message: message));
     });
 
     _bannerTimer?.cancel();
     _bannerTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() => _showNotificationBanner = false);
-      }
+      if (mounted) setState(() => _showNotificationBanner = false);
     });
   }
 
@@ -72,11 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: IndexedStack(
                     index: _selectedIndex,
-                    children: [
-                      StatsPage(),
-                      ChatPage(),
-                      LogsPage(logs: _intrusionLogs),
-                    ],
+                    children: [StatsPage(), ChatPage(), LogsPage()],
                   ),
                 ),
               ],
@@ -85,6 +83,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           NotificationBanner(
             show: _showNotificationBanner,
             message: _alertMessage,
+            type: _alertType,
+            onTap: () {
+              setState(() {
+                _showNotificationBanner = false;
+                _selectedIndex = _alertType == 'intrusion' ? 2 : 1;
+              });
+            },
           ),
         ],
       ),

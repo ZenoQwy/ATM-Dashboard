@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import '../models/chat_message.dart';
 import '../services/socket_service.dart';
 import '../config/app_config.dart';
@@ -78,9 +79,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageBubble(ChatMessage message) {
-    final String time =
-        "${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}";
-
     return Align(
       alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -126,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      time,
+                      DateFormat('HH:mm').format(message.timestamp),
                       style: TextStyle(
                         fontSize: 8,
                         color: Colors.white.withOpacity(0.5),
@@ -188,6 +186,9 @@ class _ChatPageState extends State<ChatPage> {
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(
                       AppConfig.maxMessageLength,
+                    ),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9\s.,!?;:@()#&"\-+/*=%€$À-ÿ]'),
                     ),
                   ],
                   decoration: const InputDecoration(

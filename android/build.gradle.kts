@@ -4,7 +4,6 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Charge le plugin Google Services pour tout le projet
         classpath("com.google.gms:google-services:4.4.0")
     }
 }
