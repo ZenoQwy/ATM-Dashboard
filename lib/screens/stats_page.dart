@@ -23,11 +23,7 @@ class _StatsPageState extends State<StatsPage> {
         const Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            StatItem(
-              label: "TPS",
-              value: "20.0",
-              color: Color(AppConfig.successColor),
-            ),
+            StatItem(label: "TPS", value: "20.0", color: AppConfig.success),
             StatItem(label: "MSPT", value: "12.4", color: Colors.cyanAccent),
           ],
         ),

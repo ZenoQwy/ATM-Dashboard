@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../config/app_config.dart';
 
 class NotificationBanner extends StatelessWidget {
   final bool show;
@@ -17,16 +16,38 @@ class NotificationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIntrusion = type == 'intrusion';
+    final Color accentColor;
+    final IconData iconData;
+    final String label;
 
-    final accentColor = isIntrusion
-        ? const Color(0xFFFF3B30)
-        : const Color(0xFF00E5FF);
+    switch (type) {
+      case 'intrusion':
+        accentColor = const Color(0xFFFF3B30);
+        iconData = Icons.fmd_bad_rounded;
+        label = "SÉCURITÉ";
+        break;
+      case 'join':
+        accentColor = const Color(0xFF4CD964);
+        iconData = Icons.login_rounded;
+        label = "CONNEXION";
+        break;
+      case 'leave':
+        accentColor = const Color(0xFFFF9500);
+        iconData = Icons.logout_rounded;
+        label = "DÉCONNEXION";
+        break;
+      case 'chat':
+      default:
+        accentColor = const Color(0xFF00E5FF);
+        iconData = Icons.forum_rounded;
+        label = "MESSAGE";
+        break;
+    }
 
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeOutBack,
-      top: show ? 55 : -120,
+      top: show ? 30 : -120,
       left: 15,
       right: 15,
       child: GestureDetector(
@@ -53,11 +74,7 @@ class NotificationBanner extends StatelessWidget {
                   color: accentColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  isIntrusion ? Icons.fmd_bad_rounded : Icons.forum_rounded,
-                  color: accentColor,
-                  size: 26,
-                ),
+                child: Icon(iconData, color: accentColor, size: 26),
               ),
 
               Container(
@@ -83,7 +100,7 @@ class NotificationBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      isIntrusion ? "SÉCURITÉ" : "MESSAGE",
+                      label,
                       style: TextStyle(
                         color: accentColor,
                         fontSize: 10,

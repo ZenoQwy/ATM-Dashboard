@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'dart:async';
 import '../config/app_config.dart';
-import '../models/intrusion_log.dart';
 import '../services/notification_service.dart';
 import '../services/socket_service.dart';
 import '../widgets/notification_banner.dart';
@@ -24,9 +23,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Timer? _bannerTimer;
   String _alertType = 'chat';
 
-  final List<IntrusionLog> _intrusionLogs = [];
   final _notificationService = NotificationService();
   final _socketService = SocketService();
+  bool _isSocketLoaded = false;
 
   @override
   void initState() {
@@ -36,13 +35,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _initializeServices() async {
     await _notificationService.initialize();
-
     _notificationService.setNotificationHandler(_handleNewAlert);
+
     _socketService.initialize();
 
-    if (mounted) {
-      setState(() {});
-    }
+    _socketService.onlinePlayersNotifier.addListener(() {
+      if (mounted && !_isSocketLoaded) {
+        setState(() => _isSocketLoaded = true);
+      }
+    });
   }
 
   void _handleNewAlert(String message, String type) {
@@ -71,6 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               children: [
                 _buildHeader(),
+                _buildOnlinePlayersBar(),
                 Expanded(
                   child: IndexedStack(
                     index: _selectedIndex,
@@ -130,16 +132,134 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildOnlinePlayersBar() {
+    return ValueListenableBuilder<List<String>>(
+      valueListenable: _socketService.onlinePlayersNotifier,
+      builder: (context, players, _) {
+        return SizedBox(height: 80, child: _buildContent(players));
+      },
+    );
+  }
+
+  Widget _buildContent(List<String> players) {
+    if (!_isSocketLoaded) {
+      return ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: 10,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) => _buildSkeletonItem(),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: players.isEmpty
+          ? Center(
+              key: const ValueKey('empty'),
+              child: Text(
+                "AUCUN JOUEUR EN LIGNE",
+                style: TextStyle(
+                  fontSize: 8,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.bold,
+                  color: AppConfig.accent,
+                ),
+              ),
+            )
+          : ListView.builder(
+              key: const ValueKey('list'),
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: players.length,
+              itemBuilder: (context, index) {
+                final name = players[index];
+                return TweenAnimationBuilder(
+                  key: ValueKey(name),
+                  duration: const Duration(milliseconds: 100),
+                  tween: Tween<double>(begin: 0, end: 1),
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(scale: value, child: child),
+                    );
+                  },
+                  child: _buildPlayerItem(name),
+                );
+              },
+            ),
+    );
+  }
+
+  Widget _buildSkeletonItem() {
+    return TweenAnimationBuilder(
+      duration: const Duration(milliseconds: 1000),
+      tween: Tween<double>(begin: 0.2, end: 0.5),
+      builder: (context, double opacity, child) {
+        return Opacity(
+          opacity: opacity,
+          child: Container(
+            width: 45,
+            margin: const EdgeInsets.only(right: 12),
+            child: Column(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: Colors.white10,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 25,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlayerItem(String name) {
+    return Container(
+      width: 45,
+      margin: const EdgeInsets.only(right: 12),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.cyanAccent.withOpacity(0.1),
+            backgroundImage: NetworkImage(
+              "https://minotar.net/helm/$name/64.png",
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLiveIndicator() {
     return Container(
       width: 8,
       height: 8,
       decoration: const BoxDecoration(
-        color: Color(AppConfig.successColor),
+        color: AppConfig.success,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: Color(AppConfig.successColor), blurRadius: 8),
-        ],
+        boxShadow: [BoxShadow(color: AppConfig.success, blurRadius: 8)],
       ),
     );
   }
@@ -152,7 +272,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
-        backgroundColor: const Color(AppConfig.primaryColor),
+        backgroundColor: AppConfig.primary,
         selectedItemColor: Colors.cyanAccent,
         unselectedItemColor: Colors.white24,
         items: const [

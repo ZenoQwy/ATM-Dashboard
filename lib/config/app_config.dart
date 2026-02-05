@@ -1,14 +1,19 @@
-class AppConfig {
-  static const String oneSignalAppId = "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136";
-  static const String socketUrl = "https://atm-api-6ob5.onrender.com";
+import 'package:flutter/material.dart';
 
-  static const int maxMessageLength = 100;
+class AppConfig {
+  static const int primaryInt = 0xFF0F172A;
+  static const int accentInt = 0xFF00FFFF;
+  static const int successInt = 0xFF00FF9D;
+  static const int dangerInt = 0xFFFF2E63;
+
+  static const Color primary = Color(primaryInt);
+  static const Color accent = Color(accentInt);
+  static const Color success = Color(successInt);
+  static const Color danger = Color(dangerInt);
 
   static const String appName = "ATM DASHBOARD";
-  static const String appVersion = "1.1.0";
+  static const String appVersion = "1.2.0";
+  static const int maxMessageLength = 100;
 
-  static const int primaryColor = 0xFF0F172A;
-  static const int accentColor = 0xFF00FFFF;
-  static const int successColor = 0xFF00FF9D;
-  static const int dangerColor = 0xFFFF2E63;
+  static const String oneSignalAppId = "9ea4abf1-0eb3-4b17-98e6-bf80e7f9d136";
 }

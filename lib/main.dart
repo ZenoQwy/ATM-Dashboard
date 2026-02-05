@@ -19,7 +19,7 @@ class ATMDashboard extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: 'Lexend',
-        scaffoldBackgroundColor: const Color(AppConfig.primaryColor),
+        scaffoldBackgroundColor: AppConfig.primary,
       ),
       home: const DashboardScreen(),
     );
